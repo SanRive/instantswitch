@@ -1,0 +1,50 @@
+This project builds on the following work.
+
+--------------------------------------------------------------------------
+InstantSpaceSwitcher — Copyright (c) 2026 jurplel — MIT License
+https://github.com/jurplel/InstantSpaceSwitcher
+
+Provides the core space-switching implementation vendored here as
+src/ISS.c, src/ISS.h, and the CLI entry point that src/issd.c replaces.
+Also the source of the 10ms gesture phase pacing and the CLI runloop pump
+(pull request #88, unmerged at time of writing).
+
+Full license text: LICENSE-MIT
+--------------------------------------------------------------------------
+FasterSwiper — Copyright mgbowen — Apache License, Version 2.0
+https://github.com/mgbowen/FasterSwiper
+
+The macOS 27 CGEvent/IOHID serialization approach originates here: macOS 27
+stopped acting on synthetic dock-swipe events unless they carry a serialized
+IOHID payload in CGEvent field 4205, which must be spliced in via
+CGEventCreateData() / CGEventCreateFromData(). mgbowen documented the wire
+format publicly and implemented it in FasterSwiper (branch macos27).
+
+src/event_serialize.c is a C reimplementation of that approach by geesawra
+(github.com/geesawra/InstantSpaceSwitcher, commit 79a17c4), retaining
+FasterSwiper's data model and type names (IOHIDFluidTouchGestureData,
+IOHIDVelocityEventData, IOHIDSystemQueueElement*). It was published without
+attribution in an MIT-licensed fork; this project attributes it to
+FasterSwiper and includes the Apache-2.0 license accordingly.
+
+Full license text: LICENSE-APACHE
+--------------------------------------------------------------------------
+
+MODIFICATIONS made by this project to the vendored sources
+(stated per Apache License 2.0, section 4(b)):
+
+src/ISS.c
+  - Removed the macOS 27 gesture sign inversion in iss_post_dock_swipe().
+    Upstream inverts progress and velocity on the augmented path. On the
+    test machine this made the posted gesture move opposite to ISS's own
+    internal direction model, so iss_should_block_switch() guarded the
+    wrong edge and BOTH directions failed at the leftmost space.
+  - Added ~10ms pacing between the Began/Changed/Ended gesture phases,
+    backported from InstantSpaceSwitcher PR #88.
+
+src/issd.c
+  - New file. Replaces upstream's one-shot ISSCli with a resident daemon.
+    See README.md ("Why a daemon") for why this is required.
+
+tools/spacejump.m
+  - New file. Read-only diagnostic, not part of the switching path.
