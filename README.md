@@ -68,6 +68,39 @@ Set `SPACE_BUTTON_DEBUG = true` if your mouse reports different button numbers.
 Mac Mouse Fix, if installed, must not be capturing those buttons — it consumes
 them before Hammerspoon sees them.
 
+## The prediction cache
+
+ISS caches a per-display *predicted* space index after each switch and uses it
+in place of the real index, so a rapid burst of presses does not race the
+WindowServer. It never invalidates that cache.
+
+That is fine while ISS causes every space change. It is not fine in practice:
+macOS auto-switches you into a newly created fullscreen space, and you can also
+click a desktop in Mission Control or press ctrl+arrow. After any of those the
+cached index is wrong, and `iss_should_block_switch()` refuses moves — it thinks
+you are still parked on an edge. Reproduced deterministically:
+
+```
+walked to left edge with the daemon      -> prediction = 0
+moved right twice by another means       -> actually at index 2
+asked the daemon to go left              -> returned 0, REFUSED, no move
+```
+
+The symptom is a side button that silently stops working until you happen to
+make a move in the other direction, which rewrites the prediction.
+
+`issd.c` drops the cache when a press is more than `PREDICTION_TTL_MS` (600ms)
+after the previous one, or when the space count changed — the cache only ever
+helps within a burst. A `reset` command is also accepted on stdin.
+
+Note that a new fullscreen space is **inserted next to the current space**, not
+appended, so it shifts the indices of everything after it:
+
+```
+before: { 6, 8, 7, 9 }        active index 1
+after:  { 6, 50, 8, 7, 9 }    active index 2   <- 50 inserted at position 2
+```
+
 ## Measurements
 
 macOS 27.0 (26A5388g), Apple silicon, single 2560x1440 display, 5 spaces

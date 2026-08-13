@@ -45,6 +45,10 @@ src/ISS.c
 src/issd.c
   - New file. Replaces upstream's one-shot ISSCli with a resident daemon.
     See README.md ("Why a daemon") for why this is required.
+  - Invalidates ISS's prediction cache when a press is not part of a rapid
+    burst, or when the space list changed. Upstream never invalidates it,
+    so any externally-caused space change makes it refuse moves. See
+    README.md ("The prediction cache").
 
 tools/spacejump.m
   - New file. Read-only diagnostic, not part of the switching path.
