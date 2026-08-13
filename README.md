@@ -20,9 +20,14 @@ Near-instant macOS Space switching, bound to your mouse's side buttons.
 ### 1. Build
 
 ```sh
-./build-app.sh
-open ./InstantSwitch.app
+./build-app.sh /Applications/InstantSwitch.app
+open -a InstantSwitch
 ```
+
+Installing into `/Applications` makes it a normal app: it shows up in Spotlight,
+Launchpad and Finder, so you launch it like anything else. It still has no Dock
+icon while running — that is what `LSUIElement` buys you — so the menu bar item
+is the only visible sign of it.
 
 A menu bar icon appears immediately — that is your reminder it is running.
 Until you grant permission it shows **"⚠︎ Needs permission"**, and the menu has
@@ -36,8 +41,9 @@ a shortcut straight to the right settings pane.
 
 On macOS 26 and earlier this pane is called **Accessibility**.
 
-The grant is tied to the bundle's path and code hash — rebuilding or moving it
-invalidates the grant, and you must remove and re-add the entry.
+The grant is tied to the bundle's path and code hash — rebuilding **or moving**
+it invalidates the grant, and you must remove and re-add the entry. Install to
+its final location *before* granting, so you only do this once.
 
 ### 3. Stop Hammerspoon from also handling the buttons
 
@@ -48,7 +54,12 @@ delete the space-switching block from `~/.hammerspoon/init.lua`, or set
 
 ### 4. Start it at login
 
-System Settings → General → Login Items → **+** → `InstantSwitch.app`.
+Click the menu bar icon → **Open at Login**. (This uses `SMAppService`, so it
+appears under System Settings → General → Login Items like any other app, and
+can be revoked there.)
+
+Registration can fail if the app is not in a stable location — another reason to
+keep it in `/Applications` rather than running it from a build directory.
 
 ### Menu
 
@@ -57,6 +68,7 @@ System Settings → General → Login Items → **+** → `InstantSwitch.app`.
 | Active / Paused / ⚠︎ Needs permission | Current state; icon dims when not active |
 | Button 3 → space left, Button 4 → space right | Fixed bindings (edit `kButtonBack` / `kButtonForward` in `src/app_main.m`) |
 | Enabled | Pause without quitting — useful when another mouse tool needs those buttons |
+| Open at Login | Registers/unregisters the login item |
 | Quit InstantSwitch | |
 
 ### Coexisting with Mac Mouse Fix / BetterMouse

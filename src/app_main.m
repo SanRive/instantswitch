@@ -8,6 +8,7 @@
 // menu bar item, which doubles as a reminder that it is running.
 //
 #import <Cocoa/Cocoa.h>
+#import <ServiceManagement/ServiceManagement.h>
 #import <ApplicationServices/ApplicationServices.h>
 
 #include "include/ISS.h"
@@ -125,6 +126,12 @@ static CGEventRef mouseTapCallback(CGEventTapProxy proxy, CGEventType type,
         [[m addItemWithTitle:@"  Device Control and Data Access" action:nil keyEquivalent:@""] setEnabled:NO];
     }
 
+    NSMenuItem *login = [m addItemWithTitle:@"Open at Login"
+                                     action:@selector(toggleOpenAtLogin:)
+                              keyEquivalent:@""];
+    login.target = self;
+    login.state = [self opensAtLogin] ? NSControlStateValueOn : NSControlStateValueOff;
+
     [m addItem:[NSMenuItem separatorItem]];
     NSMenuItem *quit = [m addItemWithTitle:@"Quit InstantSwitch"
                                     action:@selector(terminate:) keyEquivalent:@"q"];
@@ -134,6 +141,26 @@ static CGEventRef mouseTapCallback(CGEventTapProxy proxy, CGEventType type,
         ? @"InstantSwitch — side buttons switch Spaces"
         : @"InstantSwitch — needs permission to run";
     self.statusItem.button.appearsDisabled = !self.permitted || !self.enabled;
+}
+
+- (BOOL)opensAtLogin {
+    return [SMAppService mainAppService].status == SMAppServiceStatusEnabled;
+}
+
+- (void)toggleOpenAtLogin:(id)sender {
+    SMAppService *svc = [SMAppService mainAppService];
+    NSError *err = nil;
+    BOOL ok = [self opensAtLogin] ? [svc unregisterAndReturnError:&err]
+                                  : [svc registerAndReturnError:&err];
+    if (!ok && err) {
+        NSAlert *a = [[NSAlert alloc] init];
+        a.messageText = @"Could not change the login item";
+        // Most commonly: the app is not in a stable location such as
+        // /Applications, or the user disabled it in System Settings.
+        a.informativeText = err.localizedDescription;
+        [a runModal];
+    }
+    [self refreshMenu];
 }
 
 - (void)toggleEnabled:(id)sender {

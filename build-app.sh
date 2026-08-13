@@ -37,7 +37,7 @@ PLIST
 clang -O2 -fobjc-arc -o "$MACOS/InstantSwitch" \
     src/app_main.m src/ISS.c src/event_serialize.c src/predictions.c \
     -Isrc -Isrc/include \
-    -framework Cocoa -framework ApplicationServices -framework CoreGraphics
+    -framework Cocoa -framework ApplicationServices -framework CoreGraphics -framework ServiceManagement
 
 # Ad-hoc sign so the bundle has a stable identity for the permission grant.
 # NOTE: the grant is tied to the code hash. Rebuilding invalidates it and the
