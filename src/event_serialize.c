@@ -1,6 +1,6 @@
 /*
  * C reimplementation of the CGEvent/IOHID serialization approach from
- * FasterSwiper — Copyright mgbowen — Apache License, Version 2.0
+ * FasterSwiper. Copyright mgbowen. Apache License, Version 2.0.
  * https://github.com/mgbowen/FasterSwiper  (branch macos27)
  *
  * Reimplemented by geesawra (github.com/geesawra/InstantSpaceSwitcher,

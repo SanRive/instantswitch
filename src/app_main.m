@@ -1,10 +1,10 @@
 //
-// InstantSwitch — standalone menu bar app.
+// InstantSwitch, standalone menu bar app.
 //
 // Replaces the Hammerspoon half of this project: owns the mouse-button event
 // tap itself, so Hammerspoon is not needed at all.
 //
-// Runs as an accessory app (LSUIElement), so there is no Dock icon — only the
+// Runs as an accessory app (LSUIElement), so there is no Dock icon, only the
 // menu bar item, which doubles as a reminder that it is running.
 //
 #import <Cocoa/Cocoa.h>
@@ -47,7 +47,7 @@ static CGEventRef mouseTapCallback(CGEventTapProxy proxy, CGEventType type,
     ISSDirection dir;
     if (button == kButtonBack)         dir = ISSDirectionLeft;
     else if (button == kButtonForward) dir = ISSDirectionRight;
-    else return event;   // not ours — pass it through untouched
+    else return event;   // not ours, pass it through untouched
 
     predictions_refresh_if_stale();
     iss_switch(dir);
@@ -138,8 +138,8 @@ static CGEventRef mouseTapCallback(CGEventTapProxy proxy, CGEventType type,
     quit.target = NSApp;
 
     self.statusItem.button.toolTip = self.permitted
-        ? @"InstantSwitch — side buttons switch Spaces"
-        : @"InstantSwitch — needs permission to run";
+        ? @"InstantSwitch: side buttons switch Spaces"
+        : @"InstantSwitch: needs permission to run";
     self.statusItem.button.appearsDisabled = !self.permitted || !self.enabled;
 }
 

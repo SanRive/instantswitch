@@ -1,6 +1,6 @@
-The new code in this project — src/issd.c, tools/spacejump.m,
-hammerspoon/init.example.lua, and the modifications described in NOTICE —
-is released under the MIT License.
+The new code in this project (src/issd.c, src/app_main.m,
+src/predictions.c, tools/spacejump.m, hammerspoon/init.example.lua, and the
+modifications described in NOTICE) is released under the MIT License.
 
 Vendored sources retain their original licenses; see NOTICE, LICENSE-MIT
 and LICENSE-APACHE.

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds InstantSwitch.app — the standalone menu bar version.
+# Builds InstantSwitch.app, the standalone menu bar version.
 #
 # No Hammerspoon needed: the app owns the mouse-button event tap itself.
 # Plain C/Objective-C, so Command Line Tools is enough (no Xcode, no Swift).

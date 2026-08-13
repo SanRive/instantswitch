@@ -1,5 +1,5 @@
 /*
- * Vendored from InstantSpaceSwitcher — Copyright (c) 2026 jurplel — MIT License
+ * Vendored from InstantSpaceSwitcher. Copyright (c) 2026 jurplel. MIT License.
  * https://github.com/jurplel/InstantSpaceSwitcher
  * via github.com/geesawra/InstantSpaceSwitcher commit 79a17c4
  *

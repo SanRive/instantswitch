@@ -1,212 +1,248 @@
 # instantswitch
 
-Near-instant macOS Space switching, bound to your mouse's side buttons.
+Near-instant Space switching on macOS 27, bound to your mouse's side buttons.
 
-**~56 ms instead of ~1100 ms** on macOS 27.0 (26A5388g), where every other
-third-party way of changing Space is broken.
+Measured at about 56 ms, against about 1100 ms for the system's own
+ctrl+arrow shortcut.
 
-> Builds on [InstantSpaceSwitcher](https://github.com/jurplel/InstantSpaceSwitcher)
-> by jurplel and [FasterSwiper](https://github.com/mgbowen/FasterSwiper) by
-> mgbowen, plus geesawra's C port of the macOS 27 serializer. See
-> [NOTICE](NOTICE) for full provenance and licensing.
+Built on [InstantSpaceSwitcher](https://github.com/jurplel/InstantSpaceSwitcher)
+by jurplel and [FasterSwiper](https://github.com/mgbowen/FasterSwiper) by
+mgbowen, plus geesawra's C port of the macOS 27 serializer. See
+[NOTICE](NOTICE) for full provenance and licensing.
 
----
+## Requirements
 
-## Install
+- macOS 27 (tested on 27.0, build 26A5388g)
+- Xcode Command Line Tools. Xcode itself is not needed, and neither is Swift.
+- A mouse with side buttons
 
-Requires Xcode Command Line Tools. No Xcode and no Swift — this is plain
-C/Objective-C.
+## Setup
+
+### 1. Build the app
 
 ```sh
 git clone https://github.com/SanRive/instantswitch
 cd instantswitch
 ./build-app.sh /Applications/InstantSwitch.app
+```
+
+Install it to `/Applications` before granting permission in step 3. The grant
+is tied to the bundle's location, so granting first and moving it afterwards
+silently breaks it.
+
+### 2. Open it
+
+```sh
 open -a InstantSwitch
 ```
 
-A menu bar icon appears immediately — that is your reminder it is running.
-Until you grant permission it reads **"⚠︎ Needs permission"**.
+A menu bar icon appears. There is no Dock icon and no window: the menu bar item
+is the whole interface, and it doubles as a reminder that the app is running.
 
-### Grant permission
+At this point the menu reads "Needs permission" and the buttons do nothing.
+That is expected.
 
-**System Settings → Privacy & Security → Device Control and Data Access** →
-**+** → select `/Applications/InstantSwitch.app` → toggle on → **quit and
-reopen the app** (the event tap is installed at launch).
+### 3. Grant permission
 
-> On macOS 26 and earlier this pane is called **Accessibility**. macOS 27
-> renamed it to *Device Control and Data Access*.
+The app injects synthetic input, so macOS requires explicit permission.
 
-Two things about this grant, both of which fail silently:
+1. Open System Settings
+2. Go to Privacy and Security, then Device Control and Data Access
+3. Click the "+" button
+4. Press Command-Shift-G, type `/Applications`, and select `InstantSwitch.app`
+5. Turn its switch on
 
-- It is tied to the bundle's **path and code hash**. Moving or rebuilding the
-  app invalidates it — install to `/Applications` *before* granting, so you only
-  do this once, and remove/re-add the entry after any rebuild.
-- Without it, the app runs but can switch nothing.
+On macOS 26 and earlier this pane is called Accessibility. macOS 27 renamed it
+to Device Control and Data Access.
 
-### Use it
+### 4. Restart the app
 
-Default bindings: **button 3 → space left**, **button 4 → space right**. Both
-are swallowed so apps do not also navigate back/forward.
+The event tap is installed at launch, so the new permission does not take
+effect until the app restarts.
 
-Click the menu bar icon for state, an enable/pause toggle, and **Open at Login**.
+Click the menu bar icon, choose "Quit InstantSwitch", then open it again from
+Spotlight or Launchpad.
 
-| Menu item | Meaning |
-|---|---|
-| Active / Paused / ⚠︎ Needs permission | Current state; the icon dims when not active |
-| Enabled | Pause without quitting — for when another mouse tool needs those buttons |
-| Open at Login | Registers the login item via `SMAppService` |
+### 5. Confirm it works
 
-To change the buttons, edit `kButtonBack` / `kButtonForward` in
-[`src/app_main.m`](src/app_main.m) and rebuild (then re-grant).
+Click the menu bar icon. It should now read "Active", and the icon should no
+longer look dimmed.
 
-### Coexisting with Mac Mouse Fix / BetterMouse
+Press your mouse's side buttons. Button 3 (back) moves one Space left, button 4
+(forward) moves one Space right. The switch is immediate, with no slide
+animation.
 
-Event taps are chained: whichever one sits earlier and *consumes* a button hides
-it from everything downstream. If another tool is bound to buttons 3/4, unbind
-them there — that is the only reliable fix, not something this app can work
-around. InstantSwitch passes through every button it does not handle, so the
-rest of your mappings are unaffected.
+### 6. Start it automatically
 
-### Troubleshooting
+Click the menu bar icon and turn on "Open at Login". It then appears under
+System Settings, General, Login Items, where it can also be turned off.
+
+## Using it
+
+| Menu item | What it does |
+| --- | --- |
+| Active / Paused / Needs permission | Current state. The icon dims when not active. |
+| Enabled | Pauses without quitting, for when another tool needs those buttons. |
+| Open at Login | Registers or removes the login item. |
+| Quit InstantSwitch | Exits. |
+
+To use different buttons, change `kButtonBack` and `kButtonForward` in
+[`src/app_main.m`](src/app_main.m) and rebuild. Rebuilding changes the app's
+code hash, so you must remove and re-add it in System Settings afterwards.
+
+### Other mouse utilities
+
+Mac Mouse Fix, BetterMouse and similar tools install their own event taps.
+Taps are chained, and whichever one comes first and consumes a button hides it
+from everything after it. If one of them is bound to buttons 3 or 4, unbind
+those buttons there. This is the only reliable fix, and not something this app
+can work around.
+
+InstantSwitch passes through every button it does not handle, so the rest of
+your mappings are unaffected.
+
+## Troubleshooting
 
 | Symptom | Cause |
-|---|---|
-| Nothing happens | Not granted, or granted before the app was moved/rebuilt |
-| Menu says "Needs permission" after granting | Grant applies at launch — quit and reopen |
-| Buttons work but the app also goes back/forward | Another utility is also bound to those buttons |
-| One click jumps two spaces | Two things are bound at once (e.g. the app *and* a Hammerspoon config) |
-
----
+| --- | --- |
+| Nothing happens at all | Permission not granted, or granted before the app was moved or rebuilt. |
+| Menu still says "Needs permission" after granting | The tap is installed at launch. Quit and reopen the app. |
+| It worked, then stopped after a rebuild | Rebuilding changed the code hash and invalidated the grant. Remove and re-add the entry. |
+| Buttons work, but apps also navigate back and forward | Another utility is bound to the same buttons. |
+| One click jumps two Spaces | Two things are bound at once, for example this app and a Hammerspoon config. |
 
 ## Alternative: Hammerspoon
 
-If you already run Hammerspoon and would rather not add an app, build the
-daemon instead and drive it from your config:
+If you already run Hammerspoon and would rather not install an app, build the
+daemon instead:
 
 ```sh
 ./build.sh ~/.hammerspoon/bin/spaced
 ```
 
 Grant `spaced` permission the same way, then copy
-[`hammerspoon/init.example.lua`](hammerspoon/init.example.lua) into
-`~/.hammerspoon/init.lua` or merge its space-switching section into your own.
+[`hammerspoon/init.example.lua`](hammerspoon/init.example.lua) to
+`~/.hammerspoon/init.lua`, or merge its space-switching section into your own
+config.
+
 The daemon reads `left`, `right`, `speed <n>`, `reset` and `quit` on stdin, one
-per line. Do not run both this and the app — they will both fire.
+per line. Do not run this and the app at the same time, as both will fire.
 
----
+## How it works
 
-## Why this exists
+### Why this is needed
 
 macOS 27 broke every third-party way of changing Space. Measured, not assumed:
 
 | Approach | Result |
-|---|---|
-| `hs.spaces.gotoSpace()` | Dead. Neither Dock nor WindowManager exposes the Mission Control accessibility tree (`mc`) anymore. |
-| Synthetic `ctrl`+arrow via `hs.eventtap` | Ignored. The space-switch hotkey only accepts real HID events. |
-| `CGSManagedDisplaySetCurrentSpace`, `CGSShowSpaces`/`CGSHideSpaces` | **Fake.** Bookkeeping only — `CGSGetActiveSpace` reports the new space, but the WindowServer never performs the transition. The on-screen window list is byte-identical before and after: you keep looking at the same windows. |
-| System Events pressing `ctrl`+arrow | Works, ~1100 ms — and ~97% of that is animation, so there is nothing to optimise caller-side. |
-| High-velocity synthetic Dock swipe | Works, and skips the animation. This is what we use. |
+| --- | --- |
+| `hs.spaces.gotoSpace()` | Dead. Neither Dock nor WindowManager exposes the Mission Control accessibility tree (`mc`) any more. |
+| Synthetic ctrl+arrow via an event tap | Ignored. The space-switch hotkey only accepts real HID events. |
+| `CGSManagedDisplaySetCurrentSpace`, `CGSShowSpaces` / `CGSHideSpaces` | Bookkeeping only. `CGSGetActiveSpace` reports the new Space, but the WindowServer never performs the transition. The on-screen window list is identical before and after, so you keep looking at the same windows. |
+| System Events pressing ctrl+arrow | Works, but takes about 1100 ms, roughly 97% of which is animation. |
+| High-velocity synthetic Dock swipe | Works, and skips the animation. This is what the app uses. |
 
-## Why a resident process
+### Why a resident process
 
-**The gesture is only acted on when posted from a long-lived process.**
+The Dock only acts on the synthetic gesture when it is posted from a long-lived
+process. A process that posts the events and exits is silently ignored: the
+calls return success and nothing happens.
 
-This is the key finding, and it explains why upstream's CLI does nothing on
-macOS 27 while their menu-bar app works. A process that posts the events and
-exits — even with a runloop pump — is silently ignored: the calls return success
-and nothing happens. Both the app and `spaced` therefore hold the event tap open
-for their lifetime.
+This is why upstream's command line tool does nothing on macOS 27 while their
+menu bar app works. Both the app and the daemon hold the event tap open for
+their lifetime.
 
-## The prediction cache
+### The prediction cache
 
-ISS caches a per-display *predicted* space index after each switch and uses it
-in place of the real index, so a rapid burst of presses does not race the
+InstantSpaceSwitcher caches a predicted Space index after each switch and uses
+it instead of the real index, so that a rapid burst of presses does not race the
 WindowServer. It never invalidates that cache.
 
-That is fine while ISS causes every space change. It is not fine in practice:
-macOS **auto-switches you into a newly created fullscreen space**, and you can
-also click a desktop in Mission Control or press ctrl+arrow. After any of those
-the cached index is wrong and `iss_should_block_switch()` refuses moves — it
-believes you are parked on an edge. Reproduced deterministically:
+That is fine while it causes every Space change itself. It is not fine in
+practice: macOS moves you into a newly created fullscreen Space automatically,
+and you can also click a desktop in Mission Control or press ctrl+arrow. After
+any of those the cached index is wrong, and the edge check refuses moves because
+it believes you are parked at the end of the list. Reproduced deterministically:
 
 ```
-walked to left edge with the daemon   -> prediction = 0
-moved right twice by another means    -> actually at index 2
-asked the daemon to go left           -> returned 0, REFUSED, no move
+walked to the left edge with the daemon   ->  prediction = 0
+moved right twice by other means          ->  actually at index 2
+asked the daemon to move left             ->  returned 0, refused, no move
 ```
 
-The symptom is a side button that silently stops working — typically right
-after you put something fullscreen — until you happen to move the other way,
-which rewrites the prediction.
+The symptom is a side button that quietly stops working, usually right after
+you put something fullscreen, until you happen to move the other way and
+rewrite the prediction.
 
 [`src/predictions.c`](src/predictions.c) drops the cache when a press is more
-than 600 ms after the previous one, or when the space count changed. The cache
-only ever helps within a burst, so this costs nothing.
+than 600 ms after the previous one, or when the number of Spaces changed. The
+cache only ever helps within a burst, so this costs nothing.
 
-Also worth knowing: a new fullscreen space is **inserted next to the current
-space**, not appended, so it shifts the indices of everything after it:
+A new fullscreen Space is also inserted next to the current one rather than
+appended, which shifts the index of everything after it:
 
 ```
-before: { 6, 8, 7, 9 }        active index 1
-after:  { 6, 50, 8, 7, 9 }    active index 2   <- 50 inserted at position 2
+before:  { 6, 8, 7, 9 }        active index 1
+after:   { 6, 50, 8, 7, 9 }    active index 2      50 inserted at position 2
 ```
 
 ## Measurements
 
 macOS 27.0 (26A5388g), Apple silicon, single 2560x1440 display. Identical
-harness for both paths, 3-second settle before sampling.
+harness for both paths, with a 3 second settle before sampling.
 
 ```
-LATENCY   gesture       n=16  min=51   max=66   avg=56 ms
-          ctrl+arrow    n=4   min=1111 max=1361 avg=1197 ms
+Latency    gesture      n=16   min=51    max=66    avg=56 ms
+           ctrl+arrow   n=4    min=1111  max=1361  avg=1197 ms
 
-ACCURACY  gesture       20 scored, 20 correct, 0 wrong, 0 discarded
+Accuracy   gesture      20 scored, 20 correct, 0 wrong, 0 discarded
 ```
 
-Accuracy = every move landed exactly one space, both directions, correct no-op
-at both edges, including into and out of a fullscreen space.
+Accuracy means every move landed exactly one Space, in both directions, with
+correct no-op behaviour at both edges, including moving into and out of a
+fullscreen Space.
 
-### If you re-measure, read this first
+### If you re-measure this
 
-**A space switch is not observable until it fully settles.** Sampling the active
-space sooner than ~3 s returns stale mid-transition state, which looks exactly
-like overshoot ("it moved 2 spaces") or a dropped move.
+A Space switch is not observable until it has fully settled. Sampling the active
+Space sooner than about 3 seconds returns stale mid-transition state, which
+looks exactly like overshoot or a dropped move.
 
-This produced a completely wrong conclusion during development — the gesture
-approach was judged unreliable on the strength of it. The tell: the same short
-settle made the *known-good* ctrl+arrow path appear to skip spaces too. If your
-reference path looks broken, suspect your measurement.
+This produced a completely wrong conclusion during development, and the gesture
+approach was briefly judged unreliable because of it. The giveaway was that the
+same short settle made the known-good ctrl+arrow path appear to skip Spaces too.
+If your reference path looks broken, suspect the measurement first.
 
 Gesture velocity is momentum, not latency. Upstream's default of 2000 overshoots
-by two spaces on the first move here; anything ≤1000 lands exactly one. Lowering
-it does not slow switching down.
+by two Spaces on the first move on this hardware, while anything at or below
+1000 lands exactly one. Lowering it does not make switching slower.
 
-## Known limitations
+## Limitations
 
-- **Private, undocumented APIs on a beta OS.** CGEvent fields 55/110/123/124/
-  129/130/132 and the serialized IOHID payload in field 4205 are undocumented.
-  Any macOS update can break this without warning.
-- Verified on **one machine, one display**. Multi-monitor is untested.
-- Depends on unmerged upstream work (InstantSpaceSwitcher PR #88 and the
+- This relies on private, undocumented APIs on a beta OS. CGEvent fields 55,
+  110, 123, 124, 129, 130 and 132, and the serialized IOHID payload in field
+  4205, are all undocumented. Any macOS update can break it without warning.
+- Verified on one machine with one display. Multi-monitor is untested.
+- It depends on unmerged upstream work (InstantSpaceSwitcher PR #88 and the
   `macos-27` branch lineage). Prefer upstream once this lands there.
-- **Source only, deliberately.** An unsigned prebuilt binary asking for input
-  permission is indistinguishable from malware. Build it yourself and read
-  [`src/app_main.m`](src/app_main.m) and [`src/issd.c`](src/issd.c) — both are
-  short — before granting anything.
+- Source only, deliberately. An unsigned prebuilt binary that asks for input
+  permission is indistinguishable from malware. Build it yourself, and read
+  [`src/app_main.m`](src/app_main.m) first. It is short.
 
-## Provenance and AI disclosure
+## Credits and AI disclosure
 
-The macOS 27 serialization approach is mgbowen's (FasterSwiper, Apache-2.0); the
-space-switching core is jurplel's (InstantSpaceSwitcher, MIT); the C port of the
-serializer is geesawra's. See [NOTICE](NOTICE).
+The macOS 27 serialization approach is mgbowen's, in FasterSwiper (Apache-2.0),
+and is the reason any of this works on macOS 27. The space-switching core is
+jurplel's, in InstantSpaceSwitcher (MIT). The C port of the serializer is
+geesawra's. See [NOTICE](NOTICE).
 
-Portions of this work — the resident-process finding, the gesture sign fix, the
-prediction-cache fix, the app, and much of this repository — were written with AI
-assistance, as were parts of the upstream work it builds on (both mgbowen and
-geesawra disclosed the same). Review accordingly before granting permission.
+Parts of this work, including the resident-process finding, the gesture sign
+fix, the prediction cache fix and the app itself, were written with AI
+assistance, as were parts of the upstream work it builds on. Both mgbowen and
+geesawra disclosed the same. Review the code before granting it permission.
 
 ## License
 
-New code: MIT ([LICENSE](LICENSE)). Vendored sources retain their original
+New code is MIT ([LICENSE](LICENSE)). Vendored sources keep their original
 licenses: MIT ([LICENSE-MIT](LICENSE-MIT)) and Apache-2.0
 ([LICENSE-APACHE](LICENSE-APACHE)). See [NOTICE](NOTICE).

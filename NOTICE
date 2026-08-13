@@ -1,7 +1,7 @@
 This project builds on the following work.
 
 --------------------------------------------------------------------------
-InstantSpaceSwitcher — Copyright (c) 2026 jurplel — MIT License
+InstantSpaceSwitcher. Copyright (c) 2026 jurplel. MIT License.
 https://github.com/jurplel/InstantSpaceSwitcher
 
 Provides the core space-switching implementation vendored here as
@@ -11,7 +11,7 @@ Also the source of the 10ms gesture phase pacing and the CLI runloop pump
 
 Full license text: LICENSE-MIT
 --------------------------------------------------------------------------
-FasterSwiper — Copyright mgbowen — Apache License, Version 2.0
+FasterSwiper. Copyright mgbowen. Apache License, Version 2.0.
 https://github.com/mgbowen/FasterSwiper
 
 The macOS 27 CGEvent/IOHID serialization approach originates here: macOS 27

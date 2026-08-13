@@ -182,11 +182,6 @@ mouseListener:start()
 -- hs.hotkey.bind({ "ctrl" }, "left",  function() switchSpace("left")  end)
 -- hs.hotkey.bind({ "ctrl" }, "right", function() switchSpace("right") end)
 
--- ============================================================
---  Your own macros go here
--- ============================================================
--- (This example ships only the space-switching half.)
-
 if wakeWatcher then
     wakeWatcher:stop()
     wakeWatcher = nil
