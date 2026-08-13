@@ -26,7 +26,7 @@
 --   payload spliced into the CGEvent (field 4205) -- see InstantSpaceSwitcher
 --   issue #72. Built from geesawra's port:
 --     see NOTICE for provenance and licensing
---     source: vendored in this repo under src/
+--     vendored in this repo under src/
 --
 --   CRITICAL: the gesture only works from a RESIDENT process. Posting the
 --   events and exiting does nothing -- the Dock never acts on them. That is
@@ -34,9 +34,17 @@
 --   one-shot CLI, and it is why the upstream CLI fails where the menu-bar
 --   app succeeds.
 --
---   CRITICAL: the binary lives at bin/spaced because THAT PATH holds the
---   Accessibility grant. Do not rename it -- the grant is tied to path + code hash, so
---   renaming or rebuilding invalidates it and switching silently stops.
+--   CRITICAL: bin/spaced must be granted permission under
+--     System Settings > Privacy & Security > Device Control and Data Access
+--   (this pane was called "Accessibility" before macOS 27). The grant is tied
+--   to the binary's path AND code hash, so moving or rebuilding it silently
+--   invalidates the grant and switching stops working until you re-add it.
+--
+--   It also drops ISS's prediction cache when a press is not part of a rapid
+--   burst, or when the space count changed. Upstream never invalidates that
+--   cache, so any space change it did not perform -- macOS auto-switching you
+--   into a new fullscreen space, clicking a desktop, ctrl+arrow -- made it
+--   refuse moves indefinitely.
 --
 --   NOTE: geesawra's port inverts the gesture sign for macOS 27, which on
 --   this machine made the gesture move opposite to ISS's internal direction
@@ -62,9 +70,9 @@
 
 local SWITCH_METHOD = "daemon"   -- "daemon" | "applescript"
 
--- Path to the binary built by ./build.sh. The Accessibility grant is tied
--- to this exact path AND its code hash, so pick a stable location and do
--- not rename or rebuild it without re-granting.
+-- Path to the binary built by ./build.sh. The permission grant is tied to
+-- this exact path AND its code hash -- do not move or rebuild it without
+-- re-adding it in System Settings.
 local SPACE_DAEMON = os.getenv("HOME") .. "/.hammerspoon/bin/spaced"
 
 -- Gesture velocity. Upstream defaults to 2000, which on this machine
@@ -179,7 +187,6 @@ mouseListener:start()
 -- ============================================================
 -- (This example ships only the space-switching half.)
 
--- Restart listeners after sleep/wake
 if wakeWatcher then
     wakeWatcher:stop()
     wakeWatcher = nil

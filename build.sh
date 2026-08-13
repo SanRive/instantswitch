@@ -19,4 +19,5 @@ clang -O2 -o "$OUT" \
 codesign --force --sign - -i spaced "$OUT"
 
 echo "built: $OUT"
-echo "Next: grant it Accessibility permission (see README.md), then run it."
+echo "Next: grant it permission under System Settings > Privacy & Security >
+      Device Control and Data Access (see README.md), then run it."
