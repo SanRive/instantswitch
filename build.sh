@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 OUT="${1:-./spaced}"
 
 clang -O2 -o "$OUT" \
-    src/issd.c src/ISS.c src/event_serialize.c \
+    src/issd.c src/ISS.c src/event_serialize.c src/predictions.c \
     -Isrc -Isrc/include \
     -framework ApplicationServices -framework CoreFoundation -framework CoreGraphics
 
